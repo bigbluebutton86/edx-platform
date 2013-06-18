@@ -165,4 +165,5 @@ class VideoAlphaDescriptor(VideoAlphaFields, RawDescriptor):
     """Descriptor for `VideoAlphaModule`."""
     module_class = VideoAlphaModule
     template_dir_name = "videoalpha"
-    mako_template = "widgets/html-subtitles.html"
+    # mako_template = "widgets/html-subtitles.html"
+    tabs = {'Subtitles': "widgets/videoalpha/subtitles.html"}

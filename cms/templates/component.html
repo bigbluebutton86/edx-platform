@@ -17,17 +17,22 @@
                 <li id="settings-mode" class="mode active-mode" aria-controls="settings-tab" role="tab">
                     <a href="#">${_("Settings")}</a>
                 </li>
-                <!-- TODO: Add Python condition checker.
-                       This button should be visible for Video Alpha componenet only. -->
-                <li id="subtitles-mode" class="mode active-mode" aria-controls="subtitles-tab" role="tab">
-                    <a href="#">${_("Subtitles")}</a>
-                </li>
+                % for tab_name, tab_content in module_custom_html_tabs.items():
+                    <li id="tab-${loop.index}-mode" class="mode active-mode" aria-controls="${tab_name.lower() | entity}-tab" role="tab">
+                        <a href="#">${tab_name}</a>
+                    </li>
+                % endfor
 	  		</ul>
 		</div> <!-- Editor Header -->
 
 		<div class="component-edit-modes">
 	        <div class="module-editor">
 	            ${editor}
+                % for tab_name, tab_content in module_custom_html_tabs.items():
+                    <div class="wrapper-comp-${tab_name.lower() | entity}" id="wrap-${loop.index}-tab">
+                        <%include file="${tab_content}"/>
+                    </div>
+                % endfor
 	        </div>
 		</div>
 		<div class="row module-actions">
