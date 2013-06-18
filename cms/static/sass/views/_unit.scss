@@ -536,10 +536,10 @@ body.course.unit {
 
 // Settings Wrapper
 .wrapper-comp-settings {
-  display: none;
+  display: block;
 
-  &.is-active {
-    display: block;
+  &.is-inactive {
+    display: none;
   }
 
   //settings-list
@@ -720,34 +720,36 @@ body.course.unit {
     }
   }
 }
-// Settings Wrapper
-.wrapper-comp-subtitles {
-  display: none;
+// Wrapper for module specific tabs
+.component-edit-tab {
+  display: block;
 
-  &.is-active {
-    display: block;
+  &.is-inactive {
+    display: none;
   }
 
-  .comp-subtitles-entry{
+  .field{
     background: white;
     padding: 20px;
+  }
 
-    .green-button{
-      @include orange-button;
-      display: block;
-      width: 70%;
-      margin: 0 auto;
-      text-transform: uppercase;
-      text-align: center;
-    }
 
-    > li{
-      display: block;
-      margin: $baseline/2 0px $baseline/2 0;
-    }
-
+  .orange-button{
+    @include orange-button;
+    display: block;
+    width: 70%;
+    margin: 0 auto;
+    text-align: center;
   }
 }
+
+.comp-subtitles-entry{
+  > li{
+    display: block;
+    margin: $baseline/2 0px $baseline/2 0;
+  }
+}
+
 // ====================
 
 // Editing Units from Courseware
