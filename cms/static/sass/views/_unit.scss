@@ -733,22 +733,71 @@ body.course.unit {
     padding: 20px;
   }
 
-
-  .orange-button{
-    @include orange-button;
-    display: block;
-    width: 70%;
-    margin: 0 auto;
-    text-align: center;
-  }
+  .blue-button{
+      @include blue-button;
+    }
 }
 
 .comp-subtitles-entry{
-  > li{
-    display: block;
-    margin: $baseline/2 0px $baseline/2 0;
+  text-align: center;
+
+  .comp-import-variants{
+    > li{
+      display: block;
+      margin: $baseline/2 0px $baseline/2 0;
+    }
+
+    .blue-button{
+      display: block;
+      width: 70%;
+      margin: 0 auto;
+      text-align: center;
+    }
   }
 }
+
+  #circle-preloader{
+    width:70px;
+    padding: 20px 0;
+    margin: 0 auto;
+  }
+
+  .circle-preloader{
+    background-color:#EDBD45;
+    float:left;
+    height:15px;
+    margin-left:8px;
+    width:15px;
+    @include animation-name(bounce-circle-preloader);
+    @include animation-duration(1.8s);;
+    @include animation-timing-function(linear);
+    @include animation-iteration-count(infinite);
+    border-radius:10px;
+  }
+
+  #circle-preloader_1{
+    @include animation-delay(0.4s);
+  }
+
+  #circle-preloader_2{
+    @include animation-delay(0.7s);
+  }
+
+  #circle-preloader_3{
+    @include animation-delay(1.0s);
+  }
+
+  @mixin bounce-circle-preloader {
+    50% {
+      background-color:#323232
+    }
+  }
+
+  @-moz-keyframes bounce-circle-preloader { @include bounce-circle-preloader(); }
+  @-webkit-keyframes bounce-circle-preloader { @include bounce-circle-preloader(); }
+  @-o-keyframes bounce-circle-preloader { @include bounce-circle-preloader(); }
+  @keyframes bounce-circle-preloader { @include bounce-circle-preloader();}
+
 
 // ====================
 
