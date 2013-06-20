@@ -8,13 +8,14 @@ import copy
 import logging
 import re
 import json
-from functools import wraps
 import HTMLParser
+from functools import wraps
 
 import requests
 from lxml import etree
 from django.conf import settings
 from django.core.urlresolvers import reverse
+from pysrt import SubRipFile
 
 from cache_toolbox.core import del_cached_content
 from django_comment_client.utils import JsonResponse
@@ -409,5 +410,43 @@ def download_youtube_subs(youtube_subs, item):
                 youtube_subs[available_speed],
                 available_speed)
             )
+
+    return True
+
+
+def generate_subs_from_source(youtube_subs, subs_type, subs_filedata, item):
+    """Generate subtitles from source files (like SubRip format, etc.)
+    and save them to assets for `item` module."""
+    html_parser = HTMLParser.HTMLParser()
+
+    if subs_type != 'srt':
+        log.error("We support only SubRip (*.srt) subtitles format.")
+        return False
+
+    srt_subs_obj = SubRipFile.from_string(subs_filedata)
+    if not srt_subs_obj:
+        log.error("Something wrong with SubRip subtitles file during parsing.")
+        return False
+
+    sub_starts = []
+    sub_ends = []
+    sub_texts = []
+
+    for sub in srt_subs_obj:
+        sub_starts.append(sub.start.ordinal)
+        sub_ends.append(sub.end.ordinal)
+        sub_texts.append(html_parser.unescape(sub.text.replace('\n', ' ')))
+
+    subs = {
+        'start': sub_starts,
+        'end': sub_ends,
+        'text': sub_texts}
+
+    for speed, youtube_id in youtube_subs.iteritems():
+        # We expect, that speed of source subs equal to 1.
+        save_subs_to_store(
+            generate_subs(speed, 1, subs),
+            youtube_id,
+            item)
 
     return True
