@@ -1,9 +1,10 @@
 from datetime import datetime
 
-from . import ModuleStoreBase, Location, namedtuple_to_son
+from . import Location, namedtuple_to_son
 from .exceptions import ItemNotFoundError
 from .inheritance import own_metadata
 from xmodule.exceptions import InvalidVersionError
+from xmodule.modulestore.mongo import MongoModuleStore
 from pytz import UTC
 
 DRAFT = 'draft'
@@ -36,7 +37,7 @@ def wrap_draft(item):
     return item
 
 
-class DraftModuleStore(ModuleStoreBase):
+class DraftModuleStore(MongoModuleStore):
     """
     This mixin modifies a modulestore to give it draft semantics.
     That is, edits made to units are stored to locations that have the revision DRAFT,
