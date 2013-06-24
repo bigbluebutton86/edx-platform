@@ -28,7 +28,7 @@ def mongo_store_config(data_dir):
 
 def draft_mongo_store_config(data_dir):
     """
-    Defines default module store using DraftMongoModuleStore.
+    Defines default module store using DraftModuleStore.
     """
 
     modulestore_options = {
@@ -42,7 +42,7 @@ def draft_mongo_store_config(data_dir):
 
     return {
         'default': {
-            'ENGINE': 'xmodule.modulestore.mongo.DraftMongoModuleStore',
+            'ENGINE': 'xmodule.modulestore.draft.DraftModuleStore',
             'OPTIONS': modulestore_options
         },
         'direct': {

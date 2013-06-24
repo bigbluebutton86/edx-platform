@@ -7,8 +7,6 @@ from django.test import TestCase
 from django.core.urlresolvers import reverse
 from django.test.utils import override_settings
 
-import xmodule.modulestore.django
-
 from xmodule.error_module import ErrorDescriptor
 from xmodule.modulestore.django import modulestore
 from xmodule.modulestore import Location
@@ -17,6 +15,7 @@ from xmodule.modulestore.xml import XMLModuleStore
 
 from helpers import LoginEnrollmentTestCase
 from modulestore_config import TEST_DATA_DIR, TEST_DATA_XML_MODULESTORE, TEST_DATA_MONGO_MODULESTORE, TEST_DATA_DRAFT_MONGO_MODULESTORE
+import xmodule
 
 
 class ActivateLoginTest(LoginEnrollmentTestCase):
