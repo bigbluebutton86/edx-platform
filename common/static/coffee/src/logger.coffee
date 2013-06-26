@@ -11,7 +11,7 @@ class @Logger
       else
         analytics.track event_type, data
 
-    $.getWithPrefix '/event',
+    $.postWithPrefix '/event',
       event_type: event_type
       event: JSON.stringify(data)
       page: window.location.href

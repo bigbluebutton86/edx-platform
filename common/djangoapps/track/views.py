@@ -34,9 +34,10 @@ def log_event(event):
 
 def user_track(request):
     """
-    Log when GET call to "event" URL is made by a user.
+    Log when POST call to "event" URL is made by a user. Uses request.REQUEST
+    to allow for GET calls.
 
-    GET call should provide "event_type", "event", and "page" arguments.
+    GET or POST call should provide "event_type", "event", and "page" arguments.
     """
     try:  # TODO: Do the same for many of the optional META parameters
         username = request.user.username
@@ -59,10 +60,10 @@ def user_track(request):
         "session": scookie,
         "ip": request.META['REMOTE_ADDR'],
         "event_source": "browser",
-        "event_type": request.GET['event_type'],
-        "event": request.GET['event'],
+        "event_type": request.REQUEST['event_type'],
+        "event": request.REQUEST['event'],
         "agent": agent,
-        "page": request.GET['page'],
+        "page": request.REQUEST['page'],
         "time": datetime.datetime.now(UTC).isoformat(),
         "host": request.META['SERVER_NAME'],
         }
