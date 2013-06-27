@@ -1,9 +1,8 @@
 from django.db import models
 
-from django.db import models
-
 
 class TrackingLog(models.Model):
+    """Defines the fields that are stored in the tracking log"""
     dtcreated = models.DateTimeField('creation date', auto_now_add=True)
     username = models.CharField(max_length=32, blank=True)
     ip = models.CharField(max_length=32, blank=True)
@@ -16,6 +15,5 @@ class TrackingLog(models.Model):
     host = models.CharField(max_length=64, blank=True)
 
     def __unicode__(self):
-        s = "[%s] %s@%s: %s | %s | %s | %s" % (self.time, self.username, self.ip, self.event_source,
-                                               self.event_type, self.page, self.event)
-        return s
+        return "[%s] %s@%s: %s | %s | %s | %s" % (self.time, self.username, self.ip, self.event_source,
+                                                  self.event_type, self.page, self.event)
