@@ -29,7 +29,10 @@ class CrowdsourceHinterFields(object):
                       default='False')
     debug = String(help='String "True"/"False" - allows multiple voting', scope=Scope.content,
                    default='False')
-    # hints[answer] = {str(pk): [hint_text, #votes]}
+    # Usage: hints[answer] = {str(pk): [hint_text, #votes]}
+    # hints is a dictionary that takes answer keys.
+    # Each value is itself a dictionary, accepting hint_pk strings as keys,
+    # and returning [hint text, #votes] pairs as values
     hints = Dict(help='A dictionary containing all the active hints.', scope=Scope.content, default={})
     mod_queue = Dict(help='A dictionary containing hints still awaiting approval', scope=Scope.content,
                      default={})
