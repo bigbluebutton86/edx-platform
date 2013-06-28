@@ -38,7 +38,7 @@ class CrowdsourceHinterFields(object):
                      default={})
     hint_pk = Integer(help='Used to index hints.', scope=Scope.content, default=0)
     # A list of previous answers this student made to this problem.
-    # Of the form (answer, (hint_pk_1, hint_pk_2, hint_pk_3)) for each problem.  hint_pk's are
+    # Of the form [answer, [hint_pk_1, hint_pk_2, hint_pk_3]] for each problem.  hint_pk's are
     # None if the hint was not given.
     previous_answers = List(help='A list of previous submissions.', scope=Scope.user_state, default=[])
     user_voted = Boolean(help='Specifies if the user has voted on this problem or not.',
@@ -169,7 +169,7 @@ class CrowdsourceHinterModule(CrowdsourceHinterFields, XModule):
                 random.sample(local_hints[answer].items(), 2)
             rand_hint_1 = rand_hint_1[0]
             rand_hint_2 = rand_hint_2[0]
-            self.previous_answers += [(answer, (best_hint_index, hint_index_1, hint_index_2))]
+            self.previous_answers += [[answer, [best_hint_index, hint_index_1, hint_index_2]]]
 
         return {'best_hint': best_hint,
                 'rand_hint_1': rand_hint_1,

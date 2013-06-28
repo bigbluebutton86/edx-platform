@@ -207,13 +207,13 @@ class CrowdsourceHinterTest(unittest.TestCase):
         out_html = m.get_html()
         self.assertTrue('Error in loading crowdsourced hinter' in out_html)
 
+    @unittest.skip("Needs to be finished.")
     def test_gethtml_multiple(self):
         """
         Makes sure that multiple crowdsourced hinters play nice, when get_html
         is called.
         NOT WORKING RIGHT NOW
         """
-        return
         m = VerticalWithModulesFactory.create()
         out_html = m.get_html()
         print out_html
