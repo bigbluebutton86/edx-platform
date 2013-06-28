@@ -1,5 +1,9 @@
+from django.http import HttpResponse
 from django.test import TestCase
-from models import TrackingLog
+from django.core.urlresolvers import reverse, NoReverseMatch
+from .models import TrackingLog
+from .views import user_track
+from nose.plugins.skip import SkipTest
 
 
 class TrackingTest(TestCase):
@@ -14,8 +18,12 @@ class TrackingTest(TestCase):
         are correctly logged in the TrackingLog db table
         """
         for request_params in requests:
-            response = self.client.post("/event", request_params)
+            try: # because /event maps to two different views in lms and cms, we're only going to test lms here
+                response = self.client.post(reverse(user_track), request_params)
+            except NoReverseMatch:
+                raise SkipTest()
             self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.content, 'success')
             tracking_logs = TrackingLog.objects.order_by('-dtcreated')
             log = tracking_logs[0]
             self.assertEqual(log.event, request_params["event"])
@@ -28,10 +36,15 @@ class TrackingTest(TestCase):
         are correctly logged in the TrackingLog db table
         """
         for request_params in requests:
-            response = self.client.get("/event", request_params)
+            try:
+                response = self.client.get(reverse(user_track), request_params)
+            except NoReverseMatch:
+                raise SkipTest()
             self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.content, 'success')
             tracking_logs = TrackingLog.objects.order_by('-dtcreated')
             log = tracking_logs[0]
             self.assertEqual(log.event, request_params["event"])
             self.assertEqual(log.event_type, request_params["event_type"])
             self.assertEqual(log.page, request_params["page"])
+
