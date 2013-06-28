@@ -19,7 +19,7 @@ __all__ = ['save_item', 'create_item', 'delete_item']
 
 # cdodge: these are categories which should not be parented, they are detached from the hierarchy
 DETACHED_CATEGORIES = ['about', 'static_tab', 'course_info']
-
+NULLABLE_FIELDS = ['markdown']
 
 @login_required
 @expect_json
@@ -54,10 +54,12 @@ def save_item(request):
         existing_item = modulestore().get_item(item_location)
 
         # update existing metadata with submitted metadata (which can be partial)
-        # IMPORTANT NOTE: if the client passed pack 'null' (None) for a piece of metadata that means 'remove it'
+        # IMPORTANT NOTE: if the client passed 'null' (None) for a piece of metadata that means 'remove it' unless
+        # the field is in NULLABLE_FIELDS which means None is an expected explicit value but not necessarily the
+        # defulat
         for metadata_key, value in posted_metadata.items():
 
-            if posted_metadata[metadata_key] is None:
+            if value is None and metadata_key not in NULLABLE_FIELDS:
                 # remove both from passed in collection as well as the collection read in from the modulestore
                 if metadata_key in existing_item._model_data:
                     del existing_item._model_data[metadata_key]
