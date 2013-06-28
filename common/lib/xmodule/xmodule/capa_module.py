@@ -891,6 +891,12 @@ class CapaModule(CapaFields, XModule):
         # render problem into HTML
         html = self.get_problem_html(encapsulate=False)
 
+        print "\n"*20
+        print "answers: " + event_info['answers']
+        print "\n"*10
+        print "state: " + event_info['state']
+        print "\n"*10
+
         return {'success': success,
                 'contents': html,
                 }

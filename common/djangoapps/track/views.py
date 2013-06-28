@@ -3,7 +3,6 @@ import logging
 import pytz
 import datetime
 import dateutil.parser
-import sys
 
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
@@ -67,7 +66,7 @@ def user_track(request):
         "page": request.REQUEST['page'],
         "time": datetime.datetime.now(UTC).isoformat(),
         "host": request.META['SERVER_NAME'],
-        }
+    }
     if len(json.dumps(event)) > 8000:  # preventing entries that are too large from being tracked
         event = "error: event size too large"
     log_event(event)
@@ -96,7 +95,7 @@ def server_track(request, event_type, event, page=None):
         "page": page,
         "time": datetime.datetime.now(UTC).isoformat(),
         "host": request.META['SERVER_NAME'],
-        }
+    }
 
     if event_type.startswith("/event_logs") and request.user.is_staff:  # don't log
         return
