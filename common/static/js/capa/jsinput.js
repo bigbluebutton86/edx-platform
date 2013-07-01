@@ -4,6 +4,43 @@
     // most relevantly, jquery). Keep in mind what happens in which context
     // when modifying this file.
 
+    /*      Check whether there is anything to be done      */
+
+    // When all the problems are first loaded, we want to make sure the
+    // constructor only runs once for each iframe; but we also want to make
+    // sure that if part of the page is reloaded (e.g., a problem is
+    // submitted), the constructor is called again.
+    
+    jsinput = jsinput || { runs : -1 };
+
+    jsinput.runs++;
+
+    if ($(document).find('section[class="jsinput"]').length >= jsinput.runs) {
+        return; 
+    }
+
+
+    /*                      Utils                               */
+
+
+    jsinput._DEBUG = jsinput._DEBUG || true;
+
+    var debuglog = function(text) {
+        if (jsinput._DEBUG) { console.log(text); }
+    };
+
+    var eqTimeout = function(fn, pred, time, max) {
+        var i = 0;
+        while (pred(fn) && i < max) {
+            setTimeout(fn, time);
+        }
+        return fn;
+    };
+
+    var isUndef = function (e) {
+        return (typeof(e) === 'undefined');
+    }
+
 
     // _deepKey and _ctxCall are helper functions used to ensure that gradefn
     // etc. can be nested objects (e.g., "firepad.getText") and that when
@@ -18,31 +55,39 @@
         return obj;
     };
 
-    var _ctxCall = function(obj, fn) {
-        var func = _deepKey(obj, fn);
-        var oldthis = fn.split('.');
-        oldthis.pop();
-        oldthis = oldthis.join();
-        var newthis = _deepKey(obj, oldthis);
 
-        var args = Array.prototype.slice.call(arguments);
+    var _ctxCall = function(obj, fn) {
+
+        var newthis, args, func, oldthis;
+
+        debuglog("Function arg: " + fn);
+
+        func = eqTimeout(_deepKey(obj, fn), isUndef, 200, 10);
+
+
+        oldthis = fn.split('.');
+
+        if (oldthis.length > 1) {
+            oldthis.pop();
+            oldthis = oldthis.join();
+            newthis = _deepKey(obj, oldthis);
+        } else {
+            newthis = obj;
+        }
+
+        debuglog("Base object: " + obj);
+        debuglog("Function: " + func);
+
+        args = Array.prototype.slice.call(arguments);
         args = args.slice(2, args.length);
 
         return func.apply(newthis, args);
     };
-   
-    // First time this function was called?
-    var isFirst = typeof(jsinput.jsinputarr) != 'undefined';
 
-    // Use this array to keep track of the elements that have already been
-    // initialized.
-    jsinput.jsinputarr = jsinput.jsinputarr || [];
-    jsinput.jsinputarr.exists = function (id) {
-        this.filter(function(e, i, a) {
-            return e.id = id;
-        });
-    };
-    
+    /*      END     Utils                                   */
+
+
+
 
     function jsinputConstructor(spec) {
         // Define an class that will be instantiated for each jsinput element
@@ -55,41 +100,29 @@
         /*                      Private methods                          */
 
         var sect = $(spec.elem).parent().find('section[class="jsinput"]');
-        // Get the hidden input field to pass to customresponse
-        function inputfield() {
-            var parent = $(spec.elem).parent();
-            return parent.find('input[id^="input_"]');
-        }
-
-        // For the state and grade functions below, use functions instead of
-        // storing their return values since we might need to call them
-        // repeatedly, and they might change (e.g., they might not be defined
-        // when we first try calling them).
-
-        // Get the grade function name
-        function getgradefn() {
-            return $(sect).attr("data");
-        }
-
-        // Get state getter
-        function getgetstate() {
-            return $(sect).attr("data-getstate");
-        }
-        // Get state setter
-        function getsetstate() {
-            var gss  = $(sect).attr("data-setstate");
-            return gss;
-        }
-        // Get stored state
-        function getstoredstate() {
-            return $(sect).attr("data-stored");
-        }
-
+        var sectattr = $(sect).attr;
         var thisIFrame = $(spec.elem).
                         find('iframe[name^="iframe_"]').
                         get(0);
-
         var cWindow = thisIFrame.contentWindow;
+
+        // Get the hidden input field to pass to customresponse
+        function _inputfield() {
+            var parent = $(spec.elem).parent();
+            return parent.find('input[id^="input_"]');
+        }
+        var inputfield = _inputfield();
+
+        // Get the grade function name
+        var getgradefn = sectattr("data");
+        // Get state getter
+        var getgetstate = sectattr("data-getstate");
+        // Get state setter
+        var getsetstate = sectattr("data-setstate");
+        // Get stored state
+        var getstoredstate = sectattr("data-stored");
+
+
 
         // Put the return value of gradefn in the hidden inputfield.
         // If passed an argument, does not call gradefn, and instead directly
@@ -107,16 +140,19 @@
                     answer: ans,
                     state:  state
                 };
-                inputfield().val(JSON.stringify(store));
+
+                debuglog("Store: " + store);
+                inputfield.val(JSON.stringify(store));
             } else {
-                inputfield().val(ans);
+                inputfield.val(ans);
+                debuglog("Answer: " + ans);
             }
             return;
         };
 
         // Find the update button, and bind the update function to its click
         // event.
-        function updateHandler() {
+        function bindUpdate() {
             var updatebutton = $(spec.elem).
                     find('button[class="update"]').get(0);
             $(updatebutton).click(update);
@@ -135,106 +171,83 @@
         // Put the update function as the value of the inputfield's "waitfor"
         // attribute so that it is called when the check button is clicked.
         function bindCheck() {
-            inputfield().data('waitfor', that.update);
+            debuglog("Update function: " + that.update);
+            inputfield.data('waitfor', that.update);
             return;
         }
 
         var gradefn = getgradefn();
+        debuglog("Gradefn: " + gradefn);
 
         if (spec.passive === false) {
-            updateHandler();
-            bindCheck();
-            // Check whether application takes in state and there is a saved
-            // state to give it. If getsetstate is specified but calling it
-            // fails, wait and try again, since the iframe might still be
-            // loading.
-            if (getsetstate() && getstoredstate()) {
-                var sval;
-                if (typeof(getstoredstate()) === "object") {
-                    sval = getstoredstate()["state"];
-                } else {
-                    sval = getstoredstate();
-                }
-                function whileloop(n) {
-                    if (n < 10){
-                        try {
-                            _ctxCall(cWindow, getsetstate(), sval);
-                        } catch (err) {
-                            setTimeout(whileloop(n+1), 200);
-                        }
-                    }
-                    else {
-                        console.log("Error: could not set state");
-                    }
-                }
-                whileloop(0);
-                
-            }
+            // If there is a separate "Update" button, bind update to it.
+            bindUpdate();
         } else {
-            // NOT CURRENTLY SUPPORTED
-            // If set up to passively receive updates (intercept a function's
-            // return value whenever the function is called) add an event
-            // listener that listens to messages that match "that"'s id.
-            // Decorate the iframe gradefn with updateDecorator.
-            iframe.contentWindow[gradefn] = updateDecorator(iframe.contentWindow[gradefn]);
-            iframe.contentWindow.addEventListener('message', function (e) {
-                var id = e.data[0],
-                    msg = e.data[1];
-                if (id === spec.id) { update(msg); }
-            });
+            // Otherwise, bind update to the check button.
+            bindCheck();
+        }
+
+
+        // Check whether application takes in state and there is a saved
+        // state to give it. If getsetstate is specified but calling it
+        // fails, wait and try again, since the iframe might still be
+        // loading.
+        if (getsetstate() && getstoredstate()) {
+            var sval;
+            if (typeof(getstoredstate()) === "object") {
+                sval = getstoredstate()["state"];
+            } else {
+                sval = getstoredstate();
+            }
+
+            debuglog("Stored state: "+ sval);
+            debuglog("Set_statefn: " + getsetstate());
+
+            function whileloop(n) {
+                if (n < 10){
+                    try {
+                        _ctxCall(cWindow, getsetstate(), sval);
+                    } catch (err) {
+                        setTimeout(whileloop(n+1), 200);
+                    }
+                }
+                else {
+                    debuglog("Error: could not set state");
+                    _ctxCall(cWindow, getsetstate(), sval);
+                }
+            }
+            whileloop(0);
+
         }
 
 
         return that;
     }
 
-    function updateDecorator(fn, id) {
-    // NOT CURRENTLY SUPPORTED
-    // Simple function decorator that posts the output of a function to the
-    // parent iframe before returning the original function's value.
-    // Can be used to decorate one or more gradefn (instead of using an
-    // explicit "Update" button) when gradefn is automatically called as part
-    // of an application's natural behavior.
-    // The id argument is used to specify which of the instances of jsinput on
-    // the parent page the message is being posted to.
-        return function () {
-            var result = fn.apply(null, arguments);
-            window.parent.contentWindow.postMessage([id, result], document.referrer);
-            return result;
-        };
-    }
 
     function walkDOM() {
-    // Find all jsinput elements, and create a jsinput object for each one
-        var all = $(document).find('section[class="jsinput"]');
         var newid;
+
+        // Find all jsinput elements, and create a jsinput object for each one
+        var all = $(document).find('section[class="jsinput"]');
+
         all.each(function() {
             // Get just the mako variable 'id' from the id attribute
             newid = $(this).attr("id").replace(/^inputtype_/, "");
+
             if (! jsinput.jsinputarr.exists(newid)){
                 var newJsElem = jsinputConstructor({
                     id: newid,
                     elem: this,
-                    passive: false
+                    passive: true
                 });
             }
         });
     }
 
-    // TODO: Inject css into, and retrieve frame size from, the iframe (for non
-    // "seamless"-supporting browsers).
-    //var iframeInjection = {
-        //injectStyles : function (style) {
-            //$(document.body).css(style);
-        //},
-        //sendMySize : function () {
-            //var height = html.height,
-                //width = html.width;
-            //window.parent.postMessage(['height', height], '*');
-            //window.parent.postMessage(['width', width], '*');
-        //}
-    //};
-
-   
-    setTimeout(walkDOM, 100);
+    if ($.isReady) {
+        setTimeout(walkDOM, 1000);
+    } else {
+        $(document).ready(setTimeout(walkDOM, 1000));
+    }
 })(window.jsinput = window.jsinput || {})
